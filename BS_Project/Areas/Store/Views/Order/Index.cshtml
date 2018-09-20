@@ -1,0 +1,101 @@
+﻿@model PagedList.IPagedList<BS_Project.EF.OrdersBook>
+@using PagedList.Mvc
+
+<link href="~/Scripts/imagecenter.css" rel="stylesheet" />
+<script src="~/Scripts/bootstrap.js"></script>
+<link href="~/Scripts/animate.css" rel="stylesheet" />
+<link href="~/Scripts/rmodal.css" rel="stylesheet" />
+<script type="text/javascript" src="https://unpkg.com/rmodal@1.0.26/dist/rmodal.js"></script>
+<style type="text/css">
+    .modal .modal-dialog {
+        margin-top: 200px;
+        width: 60%;
+    }
+</style>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Areas/Store/Views/Shared/_Layout.cshtml";
+}
+<link href="~/Content/pop.css" rel="stylesheet" />
+
+<section class="content-header">
+    <h1>
+        Order Information
+    </h1>
+    <ol class="breadcrumb">
+        <li><a href="/Store/Home/Index"><i class="fa fa-dashboard"></i> Home</a></li>
+        <li><a href="/Store/Order">Order Management</a></li>
+    </ol>
+</section>
+<section class="content">
+    <div class="row">
+        <div class="col-xs-12">
+            <div>
+                <div class="box-header">
+                    <div class="input-group-btn">
+                        <div class="box-tools" style="float:right; margin: 10px 10px 10px 10px">
+                            @using (Html.BeginForm("Index", "Book", FormMethod.Get))
+                            {
+
+                                <div class="input-group input-group-sm" style="width: 250px;">
+                                    <input type="text" value="@ViewBag.SearchString" name="searchString" class="form-control pull-right" placeholder="Search">
+                                    <div class="input-group-btn">
+                                        <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <table class="table table-bordered table-hover" style="min-height:300px">
+                        <tr>
+                            <th style="width: 20%; text-align: center">
+                                @Html.DisplayNameFor(model => model.First().OrderID)
+                            </th>
+                            <th style="width:20% ; text-align: center">
+                                @Html.DisplayNameFor(model => model.First().User.FullName)
+                            </th>
+                            <th style="width:20% ; text-align: center">
+                                @Html.DisplayNameFor(model => model.First().Status)
+                            </th>
+                            <th style="width:20% ; text-align: center">
+                                @Html.DisplayNameFor(model => model.First().OrdersDetails.FirstOrDefault().Book.Name)
+                            </th>
+                            <th style="width:20% ; text-align: center">
+                                Total
+                            </th>
+                            <th style="width: 20%; text-align: center">
+                                #
+                            </th>
+                        </tr>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td style="text-align: center;">
+                                    @Html.DisplayFor(model => item.OrderID)
+                                </td>
+                                <td style="text-align: center;">
+                                    @Html.DisplayFor(model => item.User.FullName)
+                                </td>
+                                <td style="text-align: center;">
+                                    @(Convert.ToBoolean(item.Status) ? "Đang giao hàng" : "Đã giao hàng")
+                                </td>
+                                <td style="text-align: center;">
+                                    @Html.DisplayFor(model => item.OrdersDetails.FirstOrDefault().Book.Name) : @Html.DisplayFor(model => item.OrdersDetails.FirstOrDefault().Quantity)
+                                </td>
+                                <td style="text-align: center;">
+                                    @Html.DisplayFor(model => item.OrdersDetails.FirstOrDefault().Total)
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="col-sm-7">
+                        @Html.PagedListPager(Model, page => Url.Action("Index", new { page }))
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

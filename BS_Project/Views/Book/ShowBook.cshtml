@@ -1,0 +1,413 @@
+﻿@using BS_Project.EF;
+@model List<Book>
+
+@{
+    ViewBag.Title = "ShowBook";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<script src="~/Content/jquery-3.2.1.min.js"></script>
+@*phần này để code Jquery*@
+<script type="text/javascript">
+    // Read a page's GET URL variables and return them as an associative array.
+    function getUrlVars() {
+        var vars = [], hash;
+        //split tách 1 chuỗi thành 1 mãng
+        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+        for (var i = 0; i < hashes.length; i++) {
+            hash = hashes[i].split('=');
+            vars.push(hash[0]);
+            vars[hash[0]] = hash[1];
+        }
+        return vars;
+    }
+
+    $(document).ready(function () {
+        var temp = 0;
+        $('.showBookFollowCategory').click(function () {
+            //quay sort về default khi chuyển thể loại
+            $("div.sorting select").val("0");
+
+            // thay đổi condition = 3 để sort cho đúng (vì sử dụng ajax ko thay đổi đường dẫn nên phải dùng cách này)
+            //jQuery.param.querystring(window.location.href, 'condition=3');
+            //location.href.replace("condition=3");
+            if (temp = 0) {
+                window.location.href = 'http://localhost:4774/Book/ShowBook?condition=3';
+                temp = temp + 1;
+            }
+
+            var page = getUrlVars()["page"];
+
+            var idcate = $(this).attr('id');
+            $.ajax({
+                type: "GET",
+                url: "/Book/ShowBookFollowCategory",
+                data: {
+                    page: 0, idCategory: idcate, sortID: 0, condition: 1
+                },
+                datatype: "html",
+                contentType: 'application/x-www-form-urlencoded',
+                success: function (data) {
+                    $('#listBook').html(data);
+                    $('#' + 0 + 'pagecate').css("background-color", "red");
+                    $('#' + page + 'pagecate').css("background-color", "transparent");
+                    //---------------------Test
+                    $.ajax({
+                        url: "/OrderBook/LoadOrderCart",
+                        data: {
+                        },
+                        datatype: "json",
+                        type: 'POST',
+                        success: function (data) {
+                            if (data >= 3) {
+                                $('div[name=addToCart]').css("background-color", "red");
+                                $('div[name=addToCart]').html("Your cart's full");
+                            }
+                            $('#totalBook').text(data);
+                        },
+                        error: function () {
+                            alert("Error occured!!");
+                        }
+                    });
+                    $('div[name=addToCart]').click(function () {
+                        //Lay gia tri tu thuoc tinh id cua div addToCart
+                        if ($('#username').text() !== "") {
+                            var bookID = $(this).attr('id');
+                            $.ajax({
+                                url: "/CartItem/AddToCart",
+                                data: {
+                                    bookID: bookID, quantity: 1
+                                },
+                                datatype: "json",
+                                type: 'POST',
+                                success: function (data) {
+                                    if (data.TotalBorrowed >= 3) {
+                                        $('#totalBook').text(data.TotalBorrowed);
+                                        if (data.Status) {
+                                            $('#mySuccess').modal('show');
+                                        } else {
+                                            $('#myFail').modal('show');
+                                        }
+                                        $('div[name=addToCart]').css("background-color", "red");
+                                        $('div[name=addToCart]').html("Your cart's full");
+
+
+                                    } else {
+                                        $('#mySuccess').modal('show');
+                                        $('#totalBook').text(data.TotalBorrowed);
+                                        $('div[name=addToCart]').css("background-color", "#2fdab8");
+                                        $('div[name=addToCart]').html("Add To Cart");
+                                    }
+                                },
+                                error: function () {
+                                    alert("Error occured!!");
+                                }
+                            });
+                        } else {
+                            $('#myModalCart').modal('show');
+                        }
+
+                    });
+                    //---------------------Test
+                },
+                error: function () {
+                    alert("Error occured!!")
+                }
+            });
+        });
+        //hiển thị sách đã được filter
+        $('#country1').on('change', function () {
+
+            //// remove màu đang có
+            //var page = getUrlVars()["page"];
+            // chuyển thành page đầu tiên khi search của trang showbook
+
+            //alert('#' + page + 'pagecate');
+            var condition = getUrlVars()["condition"];
+            var filter = this.value;
+            if (condition == 1) {
+                var idCategory = getUrlVars()["idcategory"];
+                //trả về data partialview ShowBookFollowCategory
+                $.ajax({
+                    type: "GET",
+                    url: "/Book/ShowBookFollowCategory",
+                    data: {
+                        sortID: filter, page: 0, idCategory: idCategory, condition: condition
+                    },
+                    datatype: "html",
+                    contentType: 'application/x-www-form-urlencoded',
+                    success: function (data) {
+                        $('#listBook').html(data);
+                        // select lại trang đầu tiên khi chọn search
+                        $('#' + 0 + 'pagecate').css("background-color", "red");
+                        var page = getUrlVars()["page"];
+                        $('#' + page + 'pagecate').css("background-color", "transparent");
+                        //---------------------Test
+                        $.ajax({
+                            url: "/OrderBook/LoadOrderCart",
+                            data: {
+                            },
+                            datatype: "json",
+                            type: 'POST',
+                            success: function (data) {
+                                if (data >= 3) {
+                                    $('div[name=addToCart]').css("background-color", "red");
+                                    $('div[name=addToCart]').html("Your cart's full");
+                                }
+                                $('#totalBook').text(data);
+                            },
+                            error: function () {
+                                alert("Error occured!!");
+                            }
+                        });
+                        $('div[name=addToCart]').click(function () {
+                            //Lay gia tri tu thuoc tinh id cua div addToCart
+                            if ($('#username').text() !== "") {
+                                var bookID = $(this).attr('id');
+                                $.ajax({
+                                    url: "/CartItem/AddToCart",
+                                    data: {
+                                        bookID: bookID, quantity: 1
+                                    },
+                                    datatype: "json",
+                                    type: 'POST',
+                                    success: function (data) {
+                                        if (data.TotalBorrowed >= 3) {
+                                            $('#totalBook').text(data.TotalBorrowed);
+                                            if (data.Status) {
+                                                $('#mySuccess').modal('show');
+                                            } else {
+                                                $('#myFail').modal('show');
+                                            }
+                                            $('div[name=addToCart]').css("background-color", "red");
+                                            $('div[name=addToCart]').html("Your cart's full");
+
+
+                                        } else {
+                                            $('#mySuccess').modal('show');
+                                            $('#totalBook').text(data.TotalBorrowed);
+                                            $('div[name=addToCart]').css("background-color", "#2fdab8");
+                                            $('div[name=addToCart]').html("Add To Cart");
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("Error occured!!");
+                                    }
+                                });
+                            } else {
+                                $('#myModalCart').modal('show');
+                            }
+
+                        });
+                        //---------------------Test
+
+                    },
+                    error: function () {
+                        alert("Error occured!!")
+                    }
+                });
+            } else if (condition == 2) {
+                var idPublisher = getUrlVars()["idpublisher"];
+                //trả về data partialview ShowBookFollowPublisher
+                $.ajax({
+                    type: "GET",
+                    url: "/Book/ShowBookFollowPublisher",
+                    data: {
+                        sortID: filter, page: 0, idpublisher: idPublisher, condition: condition
+                    },
+                    datatype: "html",
+                    contentType: 'application/x-www-form-urlencoded',
+                    success: function (data) {
+                        $('#listBook').html(data);
+                        $('#' + 0 + 'pagepublisher').css("background-color", "red");
+                        var page = getUrlVars()["page"];
+                        $('#' + page + 'pagepublisher').css("background-color", "transparent");
+                    },
+                    error: function () {
+                        alert("Error occured!!")
+                    }
+                });
+                //condition = 3 hiển thị tất cả các book
+            } else if (condition == 3) {
+                $.ajax({
+                    type: "GET",
+                    url: "/Book/ShowAllBook",
+                    data: {
+                        sortID: filter, page: 0, condition: condition
+                    },
+                    datatype: "html",
+                    contentType: 'application/x-www-form-urlencoded',
+                    success: function (data) {
+                        $('#listBook').html(data);
+                        $('#0page').css("background-color", "red");
+                        //---------------------Test
+                        $.ajax({
+                            url: "/OrderBook/LoadOrderCart",
+                            data: {
+                            },
+                            datatype: "json",
+                            type: 'POST',
+                            success: function (data) {
+                                if (data >= 3) {
+                                    $('div[name=addToCart]').css("background-color", "red");
+                                    $('div[name=addToCart]').html("Your cart's full");
+                                }
+                                $('#totalBook').text(data);
+                            },
+                            error: function () {
+                                alert("Error occured!!");
+                            }
+                        });
+                        $('div[name=addToCart]').click(function () {
+                            //Lay gia tri tu thuoc tinh id cua div addToCart
+                            if ($('#username').text() !== "") {
+                                var bookID = $(this).attr('id');
+                                $.ajax({
+                                    url: "/CartItem/AddToCart",
+                                    data: {
+                                        bookID: bookID, quantity: 1
+                                    },
+                                    datatype: "json",
+                                    type: 'POST',
+                                    success: function (data) {
+                                        if (data.TotalBorrowed >= 3) {
+                                            $('#totalBook').text(data.TotalBorrowed);
+                                            if (data.Status) {
+                                                $('#mySuccess').modal('show');
+                                            } else {
+                                                $('#myFail').modal('show');
+                                            }
+                                            $('div[name=addToCart]').css("background-color", "red");
+                                            $('div[name=addToCart]').html("Your cart's full");
+
+
+                                        } else {
+                                            $('#mySuccess').modal('show');
+                                            $('#totalBook').text(data.TotalBorrowed);
+                                            $('div[name=addToCart]').css("background-color", "#2fdab8");
+                                            $('div[name=addToCart]').html("Add To Cart");
+                                        }
+                                    },
+                                    error: function () {
+                                        alert("Error occured!!");
+                                    }
+                                });
+                            } else {
+                                $('#myModalCart').modal('show');
+                            }
+
+                        });
+                        //---------------------Test
+                    },
+                    error: function () {
+                        alert("Error occured!!")
+                    }
+                });
+            }
+        });
+    })
+</script>
+
+<!-- /banner_bottom_agile_info -->
+<div class="page-head_agile_info_w3l">
+    <div class="container">
+        @*hiển thị được dẫn*@
+        @{
+            int condition = 0;
+            //kiểm tra đã có tham số url condition khi truyền bên home qua chưa
+            if (Request.QueryString["condition"] != null)
+            {
+                condition = int.Parse(Request.QueryString["condition"].ToString());
+            }
+        }
+        <h3>BS <span style="color: red">BOOK  </span></h3>
+        <!--/w3_short-->
+        <div class="services-breadcrumb">
+            <div class="agile_inner_breadcrumb">
+
+                <ul class="w3_short">
+                    <li><a href="/">Home</a><i>|</i></li>
+                    @{
+                        // condition = 1 show ra sách theo thể loại
+                        if (condition == 1)
+                        {
+                            <li>Category Book</li>
+                        }
+                        //condition = 2 hiển thị theo nhà phát hành
+                        else if (condition == 2)
+                        {
+                            <li>Publisher Book</li>
+                        }
+                        // condition = 3 hiển thị tất cả các sách
+                        else if (condition == 3)
+                        {
+                            <li>Show Book</li>
+                        }
+                        // condition = 4 hiển thị sách theo keysearch
+                        else if (condition == 4)
+                        {
+                            <li>Search</li>
+                        }
+                    }
+
+                </ul>
+            </div>
+        </div>
+        <!--//w3_short-->
+    </div>
+</div>
+<!-- banner-bootom-w3-agileits -->
+<!-- banner-bootom-w3-agileits -->
+<div class="banner-bootom-w3-agileits">
+    <div class="container">
+        @{
+            Html.RenderAction("ShowCategoriesBook", "Book");
+        }
+        <div class="col-md-8 products-right">
+            <div class="sort-grid">
+                <div class="sorting">
+                    <h6>Sort By</h6>
+                    <select id="country1" onchange="change_country(this.value)" class="frm-field required sect">
+                        <option value="0">Default</option>
+                        <option value="1">View counts down</option>
+                        <option value="2">Release date is descending</option>
+                        <option value="3">Order decreasing</option>
+                    </select>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            @*cái này để dùng hiển thị sách*@
+            @*để div listbook để ajax có thể trả về*@
+            @*nếu condition = 1 hiển thị danh sách theo thể loại*@
+            <div id="listBook">
+                @{
+                    // condition = 1 show ra sách theo thể loại
+                    if (condition == 1)
+                    {
+                        Html.RenderAction("ShowBookFollowCategory", "Book");
+                        //condition = 2 sắp xếp theo nhà phát hành
+                    }
+                    else if (condition == 2)
+                    {
+                        Html.RenderAction("ShowBookFollowPublisher", "Book");
+                    }
+                    // condition = 3 hiển thị tất cả các sách
+                    else if (condition == 3)
+                    {
+                        Html.RenderAction("ShowAllBook", "Book");
+                    }
+                    // condition = 4 hiển thị sách theo keysearch
+                    else if (condition == 4)
+                    {
+                        Html.RenderAction("ShowBookFollowKeySearch", "Book");
+                    }
+                }
+            </div>
+            <div class="clearfix"></div>
+        </div>
+        <div class="clearfix"></div>
+
+
+    </div>
+</div>

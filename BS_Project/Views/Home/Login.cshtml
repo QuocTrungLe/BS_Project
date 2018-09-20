@@ -1,0 +1,37 @@
+﻿@if (Session["userName"] != null)
+{
+    if ((bool)Session["blockID"])
+    {
+        <script>
+            alert("Đăng nhập thành công");
+        </script>
+        //2 là người mua sách, được quyền vào Trang Web
+        if ((int)Session["roleID"] == 2)
+        {
+            <meta http-equiv="refresh" content="1;http://localhost:55214/">
+        }
+        //1 là Admin - chạy thẳng vào trang Admin
+        if ((int)Session["roleID"] == 1)
+        {
+            <meta http-equiv="refresh" content="1;http://localhost:55214/Store/Home/Index">
+        }
+    }
+    else
+    {
+        <script>
+            alert("Tài khoản của bạn đã bị clock!!!!!");
+        </script>
+        Session["userName"] = null;
+        <meta http-equiv="refresh" content="1;Index">
+    }
+}
+else
+{
+    <script>
+
+        alert("Sai tên đăng nhập hoặc mật khẩu!!!");
+    </script>
+
+    Session["userName"] = null;
+    <meta http-equiv="refresh" content="1;Index">
+}

@@ -1,0 +1,111 @@
+﻿@using BS_Project.EF;
+<link href="~/Content/ProfileCss/style.css" rel="stylesheet" />
+<link href="~/Content/ProfileCss/font-awesome.min.css" rel="stylesheet" />
+@{
+    var item = (User)ViewBag.User;
+}
+<div class="container">
+    <div class="row">
+        <div class="col-md-10 offset-md-1 col-lg-4 offset-lg-0">
+            <div class="sidebar">
+                <!-- User Widget -->
+                <div class="widget user-dashboard-profile">
+                    <!-- User Image -->
+                    <div class="profile-thumb">
+                        @if (@item.ImageURL == "")
+                        {
+                            <img id="user_img" src="~/Content/images/not-found.png" alt="" class="rounded-circle" />
+                        }
+                        else
+                        {
+                            <img id="user_img" src="../Content/images/image profile/@item.ImageURL" alt="" class="rounded-circle" />
+                        }
+                    </div>
+                    <!-- User Name -->
+                    <h5 class="text-center">@item.Username</h5>
+                    <p>Birthday @item.Birthday.ToLongDateString()</p>
+                </div>
+                <div class="widget user-dashboard-menu">
+                    <ul>
+                        <li>
+                            @*method profileUser có trong controller có thể thay đổi và thêm vào method đó là tham số truyền vao là @item.Username
+                                bây giờ sử dụng dữ liệu mẫu nên không có tham số truyền vào*@
+                            <form action="@Url.Action("ProfileUser","ProfileUser")">
+                                @*input này là để truyền vào method được gọi trong controller*@
+                                <input type="hidden" name="userID" value="@item.UserID">
+                                <button class="btn btn-link"><i class="fa fa-user"></i> History </button>
+                            </form>
+                            @*<a href="dashboard-my-ads.html"><i class="fa fa-user"></i> My Ads</a>*@
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-10 offset-md-1 col-lg-8 offset-lg-0">
+            <!-- Edit Personal Info -->
+            <div class="widget personal-info">
+                <h3 class="widget-header user">Edit Personal Information</h3>
+                <form action="@Url.Action("UpdateProfile", "ProfileUser")" method="POST" enctype="multipart/form-data" runat="server">
+                    <!-- User name -->
+                    <div class="form-group">
+                        <label for="first-name">User Name</label>
+                        <input type="text" class="form-control" id="first-name" disabled value="@item.Username">
+                        <input type="hidden" name="userName" value="@item.Username">
+                    </div>
+                    <!-- Full name -->
+                    <div class="form-group">
+                        <label for="last-name">Full Name</label>
+                        <input type="text" class="form-control" id="last-name" name="fullName" disabled value="@item.FullName">
+                    </div>
+                    <!-- Birth Day -->
+                    <div class="form-group">
+                        <label for="last-name">Birth Day</label>
+                        <input type="text" class="form-control" id="last-name" name="birthDay" value="@item.Birthday.ToShortDateString()">
+                    </div>
+                    <!-- File chooser -->
+                    <div class="form-group choose-file">
+                        <i class="fa fa-user text-center"></i>
+                        <input type="hidden" name="fileName" value="@item.ImageURL" />
+                        <input type="file" class="form-control-file d-inline" id="fileName" name="fileName">
+                    </div>
+                    <!-- ID number -->
+                    <div class="form-group">
+                        <label for="comunity-name">IDNumber</label>
+                        <input type="text" class="form-control" id="comunity-name" name="idNumber" disabled value="@item.IDNumber">
+                    </div>
+                    <!-- Checkbox -->
+                    @*<div class="form-check">
+                            <label class="form-check-label" for="hide-profile">
+                                <input class="form-check-input" type="checkbox" value="" id="hide-profile">
+                                Hide Profile from Public/Comunity
+                            </label>
+                        </div>*@
+                    <!-- Zip Code -->
+                    <div class="form-group">
+                        <label for="zip-code">Email</label>
+                        <input type="text" class="form-control" id="zip-code" name="email" disabled value="@item.Email">
+                    </div>
+                    <!-- Submit button -->
+                    <button class="btn btn-transparent" id="btnUpload">Save My Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script type="text/javascript">
+
+    function show(input) {
+        if (input.files && input.files[0]) {
+            var filerdr = new FileReader();
+            filerdr.onload = function (e) {
+                $('#user_img').attr('src', e.target.result);
+            }
+            filerdr.readAsDataURL(input.files[0]);
+        }
+    }
+    $("#fileName").change(function () {
+        show(this);
+    });
+</script>
